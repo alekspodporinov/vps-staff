@@ -149,7 +149,7 @@ echo -e "network:
      dhcp4: false
      addresses:
        - $IP_ADDRESS
-    routes:
+     routes:
        - to: default
          via: $GATEWAY
      nameservers:
@@ -165,7 +165,7 @@ echo "1. Network configuration will be applied"
 echo "2. System will be rebooted"
 read -p "Continue with network changes and reboot? (y/n): " FINAL_CONFIRM
 
-if [ "$FINAL_CONFIRM" == "y" ]; then
+if [ "$FINAL_CONFIRM" = "y" ]; then
  echo "Applying network configuration..."
  netplan apply
  echo "Rebooting system in 5 seconds..."
