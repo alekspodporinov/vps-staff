@@ -120,7 +120,7 @@ esac
 
 # Firewall configuration
 read -p "Do you want to enable the firewall (y/n)? " ENABLE_UFW
-if [ "$ENABLE_UFW" == "y" ]; then
+if [ "$ENABLE_UFW" = "y" ]; then
  ufw allow OpenSSH
  ufw allow 80
  ufw allow 443
@@ -132,7 +132,7 @@ fi
 
 # Network configuration (moved to end)
 read -p "Enter the IP address for ens18 (e.g., 192.168.0.191): " IP_ADDRESS
-if [[ ! "$IP_ADDRESS" == */* ]]; then
+if ! echo "$IP_ADDRESS" | grep -q "/"; then
  IP_ADDRESS="$IP_ADDRESS/24"
 fi
 
