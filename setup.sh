@@ -1,6 +1,6 @@
 !/bin/bash
 
-#wget "https://github.com/alekspodporinov/vps-staff/blob/main/setup.sh" -O setup.sh && sudo chmod +x setup>
+#wget "https://github.com/alekspodporinov/vps-staff/blob/main/setup.sh" -O setup.sh && sudo chmod +x setup.sh && sudo ./setup.sh
 
 if [ "$(id -u)" -ne 0 ]; then
  echo "This script requires root privileges. Please run as root or use sudo."
