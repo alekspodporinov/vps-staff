@@ -1,6 +1,6 @@
 !/bin/bash
 
-#wget "https://github.com/alekspodporinov/vps-staff/blob/main/setup.sh" -O setup.sh && sudo chmod +x setup.sh && sudo ./setup.sh
+#wget "https://github.com/alekspodporinov/vps-staff/raw/main/setup.sh" -O setup.sh && sudo chmod +x setup.sh && sudo ./setup.sh
 
 if [ "$(id -u)" -ne 0 ]; then
  echo "This script requires root privileges. Please run as root or use sudo."
@@ -102,7 +102,7 @@ case "$SSH_OPTION" in
  2)
    echo "Downloading the default SSH public key..."
    mkdir -p /home/"$CURRENT_USER"/.ssh
-   wget "https://github.com/alekspodporinov/vps-staff/blob/main/devap_pbk" -O /home/"$CURRENT_USER"/.ssh/a>
+   wget "https://github.com/alekspodporinov/vps-staff/raw/main/devap_pbk" -O /home/"$CURRENT_USER"/.ssh/authorized_keys
    if [ $? -eq 0 ]; then
      chmod 700 /home/"$CURRENT_USER"/.ssh
      chmod 600 /home/"$CURRENT_USER"/.ssh/authorized_keys
