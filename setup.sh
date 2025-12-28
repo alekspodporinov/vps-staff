@@ -110,7 +110,7 @@ case "$SSH_OPTION" in
      echo "Default SSH public key downloaded and applied."
    else
      echo "Failed to download the default SSH public key. Please check the URL or your internet connection."
-          exit 1
+     exit 1
    fi
    ;;
  *)
