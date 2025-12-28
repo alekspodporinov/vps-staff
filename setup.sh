@@ -142,7 +142,7 @@ GATEWAY=${GATEWAY:-192.168.0.1}
 # Store network configuration but don't apply yet
 rm -f /etc/netplan/50-cloud-init.yaml
 
-echo -e "network:
+echo "network:
  version: 2
  ethernets:
    ens18:
