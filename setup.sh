@@ -120,7 +120,7 @@ echo "Installing Homebrew..."
 apt install -y build-essential procps file git
 
 # Check if Homebrew is already installed
-if [ -d "/home/linuxbrew/.linuxbrew" ] || [ -d "${HOME}/.linuxbrew" ]; then
+if [ -d "/home/linuxbrew/.linuxbrew" ] || [ -d "/home/${CURRENT_USER}/.linuxbrew" ]; then
   echo "Homebrew is already installed. Skipping installation."
 else
   # Install Homebrew as the non-root user
@@ -130,18 +130,18 @@ else
   BREW_PREFIX="/home/linuxbrew/.linuxbrew"
   if [ -d "${BREW_PREFIX}" ]; then
     # Add to bashrc
-    if ! grep -q "eval.*${BREW_PREFIX}/bin/brew shellenv" "/home/${CURRENT_USER}/.bashrc"; then
+    if ! grep -qF "${BREW_PREFIX}/bin/brew shellenv" "/home/${CURRENT_USER}/.bashrc"; then
       echo "" >> "/home/${CURRENT_USER}/.bashrc"
       echo "# Homebrew" >> "/home/${CURRENT_USER}/.bashrc"
-      echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${CURRENT_USER}/.bashrc"
+      echo "eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"" >> "/home/${CURRENT_USER}/.bashrc"
       chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.bashrc"
     fi
     
     # Add to profile
-    if ! grep -q "eval.*${BREW_PREFIX}/bin/brew shellenv" "/home/${CURRENT_USER}/.profile"; then
+    if ! grep -qF "${BREW_PREFIX}/bin/brew shellenv" "/home/${CURRENT_USER}/.profile"; then
       echo "" >> "/home/${CURRENT_USER}/.profile"
       echo "# Homebrew" >> "/home/${CURRENT_USER}/.profile"
-      echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${CURRENT_USER}/.profile"
+      echo "eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"" >> "/home/${CURRENT_USER}/.profile"
       chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.profile"
     fi
     
