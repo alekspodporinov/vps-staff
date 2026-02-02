@@ -124,17 +124,30 @@ if [ -d "/home/linuxbrew/.linuxbrew" ] || [ -d "/home/${CURRENT_USER}/.linuxbrew
   echo "Homebrew is already installed. Skipping installation."
 else
   # Install Homebrew as the non-root user
+  # Note: This downloads and executes the official Homebrew installation script
   su - "${CURRENT_USER}" -c 'NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
   
   # Add Homebrew to the user's shell profile
-  BREW_PREFIX="/home/linuxbrew/.linuxbrew"
-  if [ -d "${BREW_PREFIX}" ]; then
+  # Detect where Homebrew was installed
+  BREW_PREFIX=""
+  if [ -d "/home/linuxbrew/.linuxbrew" ]; then
+    BREW_PREFIX="/home/linuxbrew/.linuxbrew"
+  elif [ -d "/home/${CURRENT_USER}/.linuxbrew" ]; then
+    BREW_PREFIX="/home/${CURRENT_USER}/.linuxbrew"
+  fi
+  
+  if [ -n "${BREW_PREFIX}" ]; then
+    # Ensure shell profile files exist
+    touch "/home/${CURRENT_USER}/.bashrc"
+    touch "/home/${CURRENT_USER}/.profile"
+    chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.bashrc"
+    chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.profile"
+    
     # Add to bashrc
     if ! grep -qF "${BREW_PREFIX}/bin/brew shellenv" "/home/${CURRENT_USER}/.bashrc"; then
       echo "" >> "/home/${CURRENT_USER}/.bashrc"
       echo "# Homebrew" >> "/home/${CURRENT_USER}/.bashrc"
       echo "eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"" >> "/home/${CURRENT_USER}/.bashrc"
-      chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.bashrc"
     fi
     
     # Add to profile
@@ -142,7 +155,6 @@ else
       echo "" >> "/home/${CURRENT_USER}/.profile"
       echo "# Homebrew" >> "/home/${CURRENT_USER}/.profile"
       echo "eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"" >> "/home/${CURRENT_USER}/.profile"
-      chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.profile"
     fi
     
     echo "Homebrew has been installed successfully."
