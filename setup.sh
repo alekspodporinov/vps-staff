@@ -114,6 +114,43 @@ enable_or_start qemu-guest-agent.service
 # Add user to docker group
 usermod -aG docker "$CURRENT_USER" || true
 
+# Homebrew installation
+echo "Installing Homebrew..."
+# Install Homebrew dependencies
+apt install -y build-essential procps file git
+
+# Check if Homebrew is already installed
+if [ -d "/home/linuxbrew/.linuxbrew" ] || [ -d "${HOME}/.linuxbrew" ]; then
+  echo "Homebrew is already installed. Skipping installation."
+else
+  # Install Homebrew as the non-root user
+  su - "${CURRENT_USER}" -c 'NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+  
+  # Add Homebrew to the user's shell profile
+  BREW_PREFIX="/home/linuxbrew/.linuxbrew"
+  if [ -d "${BREW_PREFIX}" ]; then
+    # Add to bashrc
+    if ! grep -q "eval.*${BREW_PREFIX}/bin/brew shellenv" "/home/${CURRENT_USER}/.bashrc"; then
+      echo "" >> "/home/${CURRENT_USER}/.bashrc"
+      echo "# Homebrew" >> "/home/${CURRENT_USER}/.bashrc"
+      echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${CURRENT_USER}/.bashrc"
+      chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.bashrc"
+    fi
+    
+    # Add to profile
+    if ! grep -q "eval.*${BREW_PREFIX}/bin/brew shellenv" "/home/${CURRENT_USER}/.profile"; then
+      echo "" >> "/home/${CURRENT_USER}/.profile"
+      echo "# Homebrew" >> "/home/${CURRENT_USER}/.profile"
+      echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${CURRENT_USER}/.profile"
+      chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.profile"
+    fi
+    
+    echo "Homebrew has been installed successfully."
+  else
+    echo "Homebrew installation may have failed. Please check manually."
+  fi
+fi
+
 # SSH Key configuration
 echo "Choose SSH configuration:"
 echo "0 - Do not import any key (login with password)"
