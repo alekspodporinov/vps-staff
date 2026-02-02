@@ -1,6 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+# VPS Setup Script for Ubuntu
+# Compatible with Ubuntu 20.04, 22.04, 24.04 and newer versions
+# Automatically detects Ubuntu version and configures repositories accordingly
+#
+# Usage:
 # wget "https://github.com/alekspodporinov/vps-staff/raw/main/setup.sh" -O setup.sh && sudo chmod +x setup.sh && sudo ./setup.sh
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -18,6 +23,25 @@ if [ -z "${CURRENT_USER}" ]; then
 fi
 
 echo "Detected user: ${CURRENT_USER}"
+
+# Detect and display Ubuntu version
+if [ -f /etc/os-release ]; then
+  . /etc/os-release
+  echo "Detected OS: ${NAME} ${VERSION}"
+  echo "Codename: ${VERSION_CODENAME}"
+  
+  # Verify this is Ubuntu
+  if [ "${ID}" != "ubuntu" ]; then
+    echo "Warning: This script is designed for Ubuntu. Detected OS: ${ID}"
+    read -r -p "Do you want to continue anyway? (y/n): " CONTINUE
+    if [ "${CONTINUE}" != "y" ]; then
+      echo "Script aborted."
+      exit 1
+    fi
+  fi
+else
+  echo "Warning: Cannot detect OS version. Proceeding with caution..."
+fi
 
 # Helper: enable if possible, otherwise start (for static units without [Install])
 enable_or_start() {
@@ -87,6 +111,8 @@ apt upgrade -y
 apt install -y mc qemu-guest-agent wireguard-tools ufw ca-certificates curl gnupg openssh-server
 
 # Docker installation
+# Docker CE officially supports Ubuntu 20.04, 22.04, 24.04 and newer versions
+# The repository is automatically configured based on detected Ubuntu codename
 apt remove -y docker docker-engine docker.io containerd runc || true
 
 install -m 0755 -d /etc/apt/keyrings
@@ -115,6 +141,7 @@ enable_or_start qemu-guest-agent.service
 usermod -aG docker "$CURRENT_USER" || true
 
 # Homebrew installation
+# Homebrew (Linuxbrew) officially supports Ubuntu 20.04, 22.04, 24.04 and newer versions
 echo "Installing Homebrew..."
 # Install Homebrew dependencies
 apt install -y build-essential procps file git
