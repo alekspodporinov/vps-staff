@@ -26,14 +26,20 @@ echo "Detected user: ${CURRENT_USER}"
 
 # Detect and display Ubuntu version
 if [ -f /etc/os-release ]; then
-  . /etc/os-release
-  echo "Detected OS: ${NAME} ${VERSION}"
-  echo "Codename: ${VERSION_CODENAME}"
+  # Parse /etc/os-release safely without sourcing
+  OS_NAME=$(grep -E '^NAME=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
+  OS_VERSION=$(grep -E '^VERSION=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
+  OS_ID=$(grep -E '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
+  OS_VERSION_CODENAME=$(grep -E '^VERSION_CODENAME=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
+  
+  echo "Detected OS: ${OS_NAME} ${OS_VERSION}"
+  echo "Codename: ${OS_VERSION_CODENAME}"
   
   # Verify this is Ubuntu
-  if [ "${ID}" != "ubuntu" ]; then
-    echo "Warning: This script is designed for Ubuntu. Detected OS: ${ID}"
-    read -r -p "Do you want to continue anyway? (y/n): " CONTINUE
+  if [ "${OS_ID}" != "ubuntu" ]; then
+    echo "Warning: This script is designed for Ubuntu. Detected OS: ${OS_ID}"
+    # Use timeout to avoid hanging in non-interactive environments
+    read -r -t 30 -p "Do you want to continue anyway? (y/n): " CONTINUE || CONTINUE="n"
     if [ "${CONTINUE}" != "y" ]; then
       echo "Script aborted."
       exit 1
