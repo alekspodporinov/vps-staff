@@ -1,6 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+# VPS Setup Script for Ubuntu
+# Compatible with Ubuntu 20.04, 22.04, 24.04 and newer versions
+# Automatically detects Ubuntu version and configures repositories accordingly
+#
+# Usage:
 # wget "https://github.com/alekspodporinov/vps-staff/raw/main/setup.sh" -O setup.sh && sudo chmod +x setup.sh && sudo ./setup.sh
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -18,6 +23,31 @@ if [ -z "${CURRENT_USER}" ]; then
 fi
 
 echo "Detected user: ${CURRENT_USER}"
+
+# Detect and display Ubuntu version
+if [ -f /etc/os-release ]; then
+  # Parse /etc/os-release safely without sourcing
+  OS_NAME=$(grep -E '^NAME=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
+  OS_VERSION=$(grep -E '^VERSION=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
+  OS_ID=$(grep -E '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
+  OS_VERSION_CODENAME=$(grep -E '^VERSION_CODENAME=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
+  
+  echo "Detected OS: ${OS_NAME} ${OS_VERSION}"
+  echo "Codename: ${OS_VERSION_CODENAME}"
+  
+  # Verify this is Ubuntu
+  if [ "${OS_ID}" != "ubuntu" ]; then
+    echo "Warning: This script is designed for Ubuntu. Detected OS: ${OS_ID}"
+    # Use timeout to avoid hanging in non-interactive environments
+    read -r -t 30 -p "Do you want to continue anyway? (y/n): " CONTINUE || CONTINUE="n"
+    if [ "${CONTINUE}" != "y" ]; then
+      echo "Script aborted."
+      exit 1
+    fi
+  fi
+else
+  echo "Warning: Cannot detect OS version. Proceeding with caution..."
+fi
 
 # Helper: enable if possible, otherwise start (for static units without [Install])
 enable_or_start() {
@@ -87,6 +117,8 @@ apt upgrade -y
 apt install -y mc qemu-guest-agent wireguard-tools ufw ca-certificates curl gnupg openssh-server
 
 # Docker installation
+# Docker CE officially supports Ubuntu 20.04, 22.04, 24.04 and newer versions
+# The repository is automatically configured based on detected Ubuntu codename
 apt remove -y docker docker-engine docker.io containerd runc || true
 
 install -m 0755 -d /etc/apt/keyrings
@@ -113,6 +145,56 @@ enable_or_start qemu-guest-agent.service
 
 # Add user to docker group
 usermod -aG docker "$CURRENT_USER" || true
+
+# Homebrew installation
+# Homebrew (Linuxbrew) officially supports Ubuntu 20.04, 22.04, 24.04 and newer versions
+echo "Installing Homebrew..."
+# Install Homebrew dependencies
+apt install -y build-essential procps file git
+
+# Check if Homebrew is already installed
+if [ -d "/home/linuxbrew/.linuxbrew" ] || [ -d "/home/${CURRENT_USER}/.linuxbrew" ]; then
+  echo "Homebrew is already installed. Skipping installation."
+else
+  # Install Homebrew as the non-root user
+  # Note: This downloads and executes the official Homebrew installation script
+  su - "${CURRENT_USER}" -c 'NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+  
+  # Add Homebrew to the user's shell profile
+  # Detect where Homebrew was installed
+  BREW_PREFIX=""
+  if [ -d "/home/linuxbrew/.linuxbrew" ]; then
+    BREW_PREFIX="/home/linuxbrew/.linuxbrew"
+  elif [ -d "/home/${CURRENT_USER}/.linuxbrew" ]; then
+    BREW_PREFIX="/home/${CURRENT_USER}/.linuxbrew"
+  fi
+  
+  if [ -n "${BREW_PREFIX}" ]; then
+    # Ensure shell profile files exist
+    touch "/home/${CURRENT_USER}/.bashrc"
+    touch "/home/${CURRENT_USER}/.profile"
+    chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.bashrc"
+    chown "${CURRENT_USER}:${CURRENT_USER}" "/home/${CURRENT_USER}/.profile"
+    
+    # Add to bashrc
+    if ! grep -qF "${BREW_PREFIX}/bin/brew shellenv" "/home/${CURRENT_USER}/.bashrc"; then
+      echo "" >> "/home/${CURRENT_USER}/.bashrc"
+      echo "# Homebrew" >> "/home/${CURRENT_USER}/.bashrc"
+      echo "eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"" >> "/home/${CURRENT_USER}/.bashrc"
+    fi
+    
+    # Add to profile
+    if ! grep -qF "${BREW_PREFIX}/bin/brew shellenv" "/home/${CURRENT_USER}/.profile"; then
+      echo "" >> "/home/${CURRENT_USER}/.profile"
+      echo "# Homebrew" >> "/home/${CURRENT_USER}/.profile"
+      echo "eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"" >> "/home/${CURRENT_USER}/.profile"
+    fi
+    
+    echo "Homebrew has been installed successfully."
+  else
+    echo "Homebrew installation may have failed. Please check manually."
+  fi
+fi
 
 # SSH Key configuration
 echo "Choose SSH configuration:"
