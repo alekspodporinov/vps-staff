@@ -140,6 +140,11 @@ systemctl status ssh
 - Source your shell profile: `source ~/.bashrc`
 - Or log out and log back in
 
+### Homebrew installation permission issues
+- The script automatically pre-creates `/home/linuxbrew/.linuxbrew` with proper ownership
+- This prevents "Insufficient permissions" errors during installation
+- If issues persist, ensure the script is run with `sudo`
+
 ### Network issues after reboot
 - Check netplan configuration: `sudo netplan status`
 - Review configuration: `cat /etc/netplan/01-netcfg.yaml`
