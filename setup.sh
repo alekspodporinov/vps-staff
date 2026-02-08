@@ -156,6 +156,12 @@ apt install -y build-essential procps file git
 if [ -d "/home/linuxbrew/.linuxbrew" ] || [ -d "/home/${CURRENT_USER}/.linuxbrew" ]; then
   echo "Homebrew is already installed. Skipping installation."
 else
+  # Pre-create the linuxbrew directory with proper ownership
+  # This allows the non-root user to install Homebrew without permission issues
+  echo "Preparing Homebrew installation directory..."
+  mkdir -p /home/linuxbrew/.linuxbrew
+  chown -R "${CURRENT_USER}:${CURRENT_USER}" /home/linuxbrew/.linuxbrew
+  
   # Install Homebrew as the non-root user
   # Note: This downloads and executes the official Homebrew installation script
   su - "${CURRENT_USER}" -c 'NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
