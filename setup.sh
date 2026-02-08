@@ -164,6 +164,8 @@ else
   
   # Install Homebrew as the non-root user
   # Note: This downloads and executes the official Homebrew installation script
+  echo "Note: Homebrew may display a warning about PATH during installation."
+  echo "This is expected - the script will automatically configure PATH for future sessions."
   su - "${CURRENT_USER}" -c 'NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
   
   # Add Homebrew to the user's shell profile
@@ -196,7 +198,11 @@ else
       echo "eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\"" >> "/home/${CURRENT_USER}/.profile"
     fi
     
-    echo "Homebrew has been installed successfully."
+    echo ""
+    echo "✓ Homebrew has been installed successfully."
+    echo "✓ PATH has been configured in ~/.bashrc and ~/.profile"
+    echo "  Homebrew will be available after you log out and log back in."
+    echo "  To use Homebrew immediately in a new shell, run: source ~/.bashrc"
   else
     echo "Homebrew installation may have failed. Please check manually."
   fi

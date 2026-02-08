@@ -140,6 +140,13 @@ systemctl status ssh
 - Source your shell profile: `source ~/.bashrc`
 - Or log out and log back in
 
+### "Warning: /home/linuxbrew/.linuxbrew/bin is not in your PATH" during installation
+- **This warning is expected and normal** during the Homebrew installation process
+- The script automatically configures PATH in your `~/.bashrc` and `~/.profile` files
+- Homebrew will work correctly after you log out and log back in
+- To use Homebrew immediately in a new shell session, run: `source ~/.bashrc`
+- No manual action is required - this is handled automatically by the setup script
+
 ### Homebrew installation permission issues
 - The script automatically pre-creates `/home/linuxbrew/.linuxbrew` with proper ownership
 - This prevents "Insufficient permissions" errors during installation
